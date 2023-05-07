@@ -39,12 +39,6 @@ public class EmployeeController {
     }
 
 
-    @PostMapping("/exit")
-    public ResponseEntity<String> exit(@RequestParam("id") int id) {
-        employeesManager.setExitTime(LocalDateTime.now(), id);
-        return new ResponseEntity<>("Exit time logged", HttpStatus.OK);
-    }
-
     private String modifyResponseForSingleEmployee(String response, Employee employee) {
         if (employee.getTimestampPairs().size() == 1 && employee.getTimestampPairs().get(0).getExitTime() == null) {
             int lastIndex = response.lastIndexOf(']');
