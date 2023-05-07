@@ -15,7 +15,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping 
 public class EmployeeController {
 
     private final EmployeesManager employeesManager;
@@ -31,6 +31,13 @@ public class EmployeeController {
         employeesManager.setEntranceTime(LocalDateTime.now(), id);
         return new ResponseEntity<>("Entrance time logged", HttpStatus.OK);
     }
+
+    @PostMapping("/exit")
+    public ResponseEntity<String> exit(@RequestParam("id") int id) {
+        employeesManager.setExitTime(LocalDateTime.now(), id);
+        return new ResponseEntity<>("Exit time logged", HttpStatus.OK);
+    }
+
 
     @PostMapping("/exit")
     public ResponseEntity<String> exit(@RequestParam("id") int id) {
