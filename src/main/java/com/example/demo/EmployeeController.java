@@ -1,7 +1,9 @@
 package com.example.demo;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,29 +17,47 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
-@RequestMapping 
+@RequestMapping
 public class EmployeeController {
 
     private final EmployeesManager employeesManager;
     private final ObjectMapper objectMapper;
+    private final Map<Integer, String> userState;
 
     public EmployeeController() {
         this.employeesManager = new EmployeesManager();
         this.objectMapper = new ObjectMapper();
+        this.userState = new HashMap<>();
     }
 
     @PostMapping("/enter")
     public ResponseEntity<String> enter(@RequestParam("id") int id) {
+        String currentState = userState.getOrDefault(id, "");
+
+        if ("ENTER".equals(currentState)) {
+            return new ResponseEntity<>("Error: Consecutive enter requests", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
         employeesManager.setEntranceTime(LocalDateTime.now(), id);
+        userState.put(id, "ENTER");
+
         return new ResponseEntity<>("Entrance time logged", HttpStatus.OK);
     }
 
     @PostMapping("/exit")
     public ResponseEntity<String> exit(@RequestParam("id") int id) {
+        String currentState = userState.getOrDefault(id, "");
+
+        if (!"ENTER".equals(currentState)) {
+            return new ResponseEntity<>("Error: Exit request without an earlier enter request",
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
         employeesManager.setExitTime(LocalDateTime.now(), id);
+        userState.put(id, "EXIT");
+
         return new ResponseEntity<>("Exit time logged", HttpStatus.OK);
     }
-
 
     private String modifyResponseForSingleEmployee(String response, Employee employee) {
         if (employee.getTimestampPairs().size() == 1 && employee.getTimestampPairs().get(0).getExitTime() == null) {
